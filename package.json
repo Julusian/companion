@@ -43,8 +43,8 @@
     ]
   },
   "scripts": {
-    "prod": "./tools/build_writefile.sh && ./bitfocus-skeleton/start.sh",
-    "dev": "./tools/build_writefile.sh && DEVELOPER=1 ./bitfocus-skeleton/start.sh",
+    "prod": "./tools/build_writefile.sh && yarn ts-build && ./bitfocus-skeleton/start.sh",
+    "dev": "./tools/build_writefile.sh && yarn ts-build && DEVELOPER=1 ./bitfocus-skeleton/start.sh",
     "update": "./tools/update.sh",
     "pack": "electron-builder --dir",
     "dist": "rm -rf electron-output && electron-builder",
@@ -55,7 +55,9 @@
     "rpidist": "rm -rf electron-output && electron-builder --armv7l --linux tar.gz",
     "start": "yarn run",
     "test": "mocha",
-    "lint": "eslint lib"
+    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "ts-build": "tsc",
+    "ts-watch": "tsc -w"
   },
   "repository": "https://github.com/bitfocus/companion",
   "keywords": [
@@ -65,12 +67,15 @@
   "author": "Bitfocus AS",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^12.7.5",
+    "@types/pngjs": "^3.3.2",
     "chai": "^4.2.0",
     "chai-fs": "^2.0.0",
     "electron": "^2.0.8",
     "electron-builder": "20.10.0",
-    "eslint": "^6.4.0",
-    "mocha": "^6.1.4"
+    "mocha": "^6.1.4",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3"
   },
   "dependencies": {
     "@coreui/coreui": "^2.0.0-rc.2",

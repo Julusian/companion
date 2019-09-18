@@ -1,0 +1,7 @@
+*.d.ts
+*.map
+
+# Files which are written in ts
+types.js
+image.js
+instance_skel2.js
