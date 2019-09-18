@@ -54,7 +54,8 @@
     "lindist": "rm -rf electron-output && electron-builder --linux tar.gz",
     "rpidist": "rm -rf electron-output && electron-builder --armv7l --linux tar.gz",
     "start": "yarn run",
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "eslint lib"
   },
   "repository": "https://github.com/bitfocus/companion",
   "keywords": [
@@ -68,6 +69,7 @@
     "chai-fs": "^2.0.0",
     "electron": "^2.0.8",
     "electron-builder": "20.10.0",
+    "eslint": "^6.4.0",
     "mocha": "^6.1.4"
   },
   "dependencies": {
