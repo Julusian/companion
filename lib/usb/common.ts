@@ -85,11 +85,10 @@ export abstract class SurfaceDriverCommon {
 
 	public info: DriverInfo;
 	public type: string;
-	public deviceType: string;
-	public keysTotal: number;
-	public keysPerRow: number;
 	public serialnumber: string;
 
+	private keysTotal: number;
+	private keysPerRow: number;
 	private buttonState: Array<{ pressed: boolean }>;
 
 	constructor(system: EventEmitter, devicepath: string, debug: (...args: any[]) => void) {
@@ -100,7 +99,6 @@ export abstract class SurfaceDriverCommon {
 		this.info = this.generateInfo(devicepath);
 
 		this.type = this.info.type;
-		this.deviceType = this.info.deviceTypeFull;
 		this.keysTotal  = this.info.keysTotal;
 		this.keysPerRow = this.info.keysPerRow;
 
@@ -134,13 +132,25 @@ export abstract class SurfaceDriverCommon {
 
 	protected abstract generateInfo(devicePath: string): DriverInfo;
 
+	protected abstract setBrightness(brightness: number): void;
+
+	protected abstract openDevice(): void;
+
+	protected abstract closeDevice(): void;
+
+	protected abstract getSerialNumber(): string;
+
+	protected abstract clearKey(key: number): void;
+
+	protected abstract fillImage(key: number, buffer: Buffer): void;
+
 	public begin() {
 		this.log(this.type + '.begin()');
 
 		this.setBrightness(this.config.brightness);
 	}
 
-	public buttonClear(key) {
+	public buttonClear(key: number) {
 		this.log(this.type + '.buttonClear(' + key + ')');
 		key = this.toDeviceKey(key);
 
@@ -157,25 +167,27 @@ export abstract class SurfaceDriverCommon {
 		}
 	}
 
-	public draw(key: number, buffer, attempts = 0) {
-
-		if (attempts === 0) {
-			buffer = prepareButtonBuffer(buffer, this.config.rotation);
-		}
-
-		attempts++;
+	public draw(key: number, rawBuffer: Buffer | BufferContent) {
 
 		const drawKey = this.toDeviceKey(key);
+		const buffer = prepareButtonBuffer(rawBuffer, this.config.rotation);
+
+		if (buffer) {
+			this.tryDrawAttempt(drawKey, buffer, 0);
+		}
+	}
+
+	private tryDrawAttempt(drawKey: number, buffer: Buffer, attempts: number) {
+		attempts++;
 
 		try {
-
 			if (drawKey !== undefined && drawKey >= 0 && drawKey < this.keysTotal) {
 				this.fillImage(drawKey, buffer);
 			}
 
 			return true;
 		} catch (e) {
-			this.log(this.deviceType + ' USB Exception: ' + e.message);
+			this.log(this.info.deviceTypeFull + ' USB Exception: ' + e.message);
 
 			if (attempts > 2) {
 				this.log('Giving up USB device ' + this.devicepath);
@@ -185,7 +197,7 @@ export abstract class SurfaceDriverCommon {
 			}
 
 			// alternatively a setImmediate() or nextTick()
-			setTimeout(this.draw.bind(this), 20, key, buffer, attempts);
+			setTimeout(() => this.tryDrawAttempt(drawKey, buffer, attempts), 20);
 		}
 	}
 
@@ -194,18 +206,6 @@ export abstract class SurfaceDriverCommon {
 
 		return this.config;
 	}
-
-	protected abstract setBrightness(brightness: number): void;
-
-	protected abstract openDevice(): void;
-
-	protected abstract closeDevice(): void;
-
-	protected abstract getSerialNumber(): string;
-
-	protected abstract clearKey(key: number): void;
-
-	protected abstract fillImage(key: number, buffer: Buffer): void;
 
 	private initializeButtonStates() {
 		this.buttonState = [];
