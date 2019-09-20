@@ -1,0 +1,9 @@
+*.d.ts
+*.map
+
+# Files which are written in ts
+!usb/handler.js
+# usb/*.js
+usb/common.js
+usb/elgato.js
+usb/elgato-xl.js

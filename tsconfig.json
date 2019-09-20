@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": ["node_modules/*"]
+        }
+    },
+    "include": [
+        "lib/**/*"
+    ],
+    "exclude": [
+        "lib/module/**/*"
+    ]
+}
