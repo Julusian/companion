@@ -16,28 +16,31 @@
  */
 
 
-var StreamDeck   = require('elgato-stream-deck-clean-xl');
-var debug        = require('debug')('lib/usb/elgato_xl');
-var { SurfaceDriverCommon } = require('./common');
+import debug = require('debug');
+import StreamDeck = require('elgato-stream-deck-clean-xl');
+import { EventEmitter } from 'events';
+import { SurfaceDriverCommon } from './common';
 
 class SurfaceDriverElgatoXL extends SurfaceDriverCommon {
-	constructor(system, devicepath) {
-		super(system, devicepath, debug);
+	private device: StreamDeck;
+
+	constructor(system: EventEmitter, devicepath: string) {
+		super(system, devicepath, debug('lib/usb/elgato_xl'));
 	}
 
-	generateInfo(devicepath) {
+	public generateInfo(devicepath: string) {
 		return {
 			type: 'Elgato Streamdeck XL device',
-			devicepath: devicepath,
+			devicepath,
 			deviceType: 'StreamDeck',
 			deviceTypeFull: 'StreamDeck XL',
 			config: [ 'brightness', 'orientation', 'page' ],
 			keysPerRow: 8,
-			keysTotal: 32
+			keysTotal: 32,
 		};
 	}
 
-	openDevice() {
+	public openDevice() {
 		this.device = new StreamDeck(this.devicepath);
 
 		this.device.on('down', (key) => this.keyDown(key));
@@ -45,40 +48,42 @@ class SurfaceDriverElgatoXL extends SurfaceDriverCommon {
 		this.device.on('error', (error) => this.removeDevice(error));
 	}
 
-	closeDevice() {
+	public closeDevice() {
 		if (this.device && this.device.device) {
 			this.device.device.close();
 		}
 		this.device = undefined;
 	}
 
-	setBrightness(brightness) {
+	public setBrightness(brightness: number) {
 		if (this.device) {
 			this.device.setBrightness(brightness);
 		}
 	}
 
-	getSerialNumber() {
+	protected getSerialNumber(): string {
 		if (this.device && this.device.device) {
-			this.device.device.getDeviceInfo().serialNumber;
+			return this.device.device.getDeviceInfo().serialNumber;
+		} else {
+			return '';
 		}
 	}
 
-	clearKey(key) {
+	public clearKey(key: number) {
 		if (this.device) {
 			this.device.clearKey(key);
 		}
 	}
 
-	clearDeck() {
+	public clearDeck() {
 		// Override given driver has a built-in clearAll
-		this.log(this.type+'.clearDeck()');
+		this.log(this.type + '.clearDeck()');
 		if (this.device) {
 			this.device.clearAllKeys();
 		}
 	}
 
-	fillImage(key, buffer) {
+	public fillImage(key: number, buffer: Buffer) {
 		if (this.device) {
 			this.device.fillImage(key, buffer);
 		}

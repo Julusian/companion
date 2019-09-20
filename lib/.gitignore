@@ -1,0 +1,6 @@
+*.d.ts
+*.map
+
+# Files which are written in ts
+!usb/handler.js
+usb/*.js
