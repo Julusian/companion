@@ -1,5 +1,9 @@
+import { EventEmitter } from "events";
 
-function rotateBuffer(buffer, rotation) {
+const MAX_BUTTONS = parseInt(process.env.MAX_BUTTONS, 10);
+const MAX_BUTTONS_PER_ROW = parseInt(process.env.MAX_BUTTONS_PER_ROW, 10);
+
+export function rotateBuffer(buffer, rotation) {
 	if (buffer.type == 'Buffer') {
 		buffer = new Buffer(buffer.data);
 	}
@@ -41,18 +45,42 @@ function rotateBuffer(buffer, rotation) {
 	}
 }
 
-function toDeviceMap (map, key) {
+export function toDeviceMap (map, key) {
 	if (key >= 0 && key < map.length) {
 		return map[key];
 	} else {
 		return -1;
 	}
 }
-function fromDeviceMap (map, key) {
+export  function fromDeviceMap (map, key) {
 	return map.indexOf(key);
 }
 
-class SurfaceDriverCommon {
+export interface DriverInfo {
+	type: string;
+	devicepath: string;
+	deviceType: string;
+	deviceTypeFull: string;
+	config: string[];
+	keysPerRow: number;
+	keysTotal: number;
+	serialnumber?: string;
+}
+
+export abstract class SurfaceDriverCommon {
+	protected system: EventEmitter;
+	protected debug: (...args: any[]) => void;
+	protected devicepath: string;
+	protected config: { [key: string]: any };
+
+	public info: DriverInfo;
+	public type: string;
+	public serialnumber: string;
+
+	private deviceType: string;
+	private keysTotal: number;
+	private keysPerRow: number;
+	private buttonState: Array<{ pressed: boolean }>;
 
 	constructor(system, devicepath, debug) {
 		this.system = system;
@@ -93,6 +121,8 @@ class SurfaceDriverCommon {
 
 		this.clearDeck();
 	}
+
+	protected abstract generateInfo(devicePath: string): DriverInfo;
 
 	begin() {
 		this.log(this.type+'.begin()');
@@ -188,7 +218,7 @@ class SurfaceDriverCommon {
 	initializeButtonStates() {
 		this.buttonState = [];
 
-		for (var button = 0; button < global.MAX_BUTTONS; button++) {
+		for (var button = 0; button < MAX_BUTTONS; button++) {
 			this.buttonState[button] = {
 				pressed: false
 			};
@@ -274,16 +304,16 @@ class SurfaceDriverCommon {
 	// and 8-12 would be 5-9
 	toDeviceKey(key) {
 
-		if (this.keysTotal == global.MAX_BUTTONS) {
+		if (this.keysTotal == MAX_BUTTONS) {
 			return key;
 		}
 
-		if (key % global.MAX_BUTTONS_PER_ROW > this.keysPerRow) {
+		if (key % MAX_BUTTONS_PER_ROW > this.keysPerRow) {
 			return -1;
 		}
 
-		var row = Math.floor(key / global.MAX_BUTTONS_PER_ROW);
-		var col = key % global.MAX_BUTTONS_PER_ROW;
+		var row = Math.floor(key / MAX_BUTTONS_PER_ROW);
+		var col = key % MAX_BUTTONS_PER_ROW;
 
 		if (row >= (this.keysTotal / this.keysPerRow) || col >= this.keysPerRow) {
 			return -1;
@@ -298,13 +328,6 @@ class SurfaceDriverCommon {
 		var rows = Math.floor(key / this.keysPerRow);
 		var col = key % this.keysPerRow;
 
-		return (rows * global.MAX_BUTTONS_PER_ROW) + col;
+		return (rows * MAX_BUTTONS_PER_ROW) + col;
 	}
 }
-
-module.exports = {
-	SurfaceDriverCommon,
-	rotateBuffer,
-	toDeviceMap,
-	fromDeviceMap
-};
