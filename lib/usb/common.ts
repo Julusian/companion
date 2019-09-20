@@ -1,42 +1,52 @@
 import { EventEmitter } from "events";
 
+export const BUFFER_SIZE = 72 * 72 * 3;
+
+export interface BufferContent {
+	type: 'Buffer';
+	data: number[];
+}
+
 const MAX_BUTTONS = parseInt(process.env.MAX_BUTTONS, 10);
 const MAX_BUTTONS_PER_ROW = parseInt(process.env.MAX_BUTTONS_PER_ROW, 10);
 
-export function rotateBuffer(buffer, rotation) {
-	if (buffer.type == 'Buffer') {
-		buffer = new Buffer(buffer.data);
+export function prepareButtonBuffer(rawBuffer: Buffer | BufferContent, rotation: number) {
+	let buffer: Buffer | undefined;
+	if (Buffer.isBuffer(rawBuffer)) {
+		buffer = rawBuffer;
+	} else if (rawBuffer.type === 'Buffer') {
+		buffer = new Buffer(rawBuffer.data);
 	}
 
-	if (buffer === undefined || buffer.length != 15552) {
+	if (buffer === undefined || buffer.length !== BUFFER_SIZE) {
 		this.log("buffer was not 15552, but " + buffer.length);
 		return false;
 	}
 
 	if (rotation === -90) {
-		var buf = new Buffer(15552);
+		const buf = new Buffer(BUFFER_SIZE);
 
-		for (var x = 0; x < 72; ++x) {
-			for (var y = 0; y < 72; ++y) {
-				buf.writeUIntBE(buffer.readUIntBE((x*72*3)+(y*3),3), (y*72*3) + ((71-x) * 3), 3);
+		for (let x = 0; x < 72; ++x) {
+			for (let y = 0; y < 72; ++y) {
+				buf.writeUIntBE(buffer.readUIntBE((x * 72 * 3) + (y * 3), 3), (y * 72 * 3) + ((71 - x) * 3), 3);
 			}
 		}
 		return buf;
 	} else if (rotation === 180) {
-		var buf = new Buffer(15552);
+		const buf = new Buffer(BUFFER_SIZE);
 
-		for (var x = 0; x < 72; ++x) {
-			for (var y = 0; y < 72; ++y) {
-				buf.writeUIntBE(buffer.readUIntBE((x*72*3)+(y*3),3), ((71-x)*72*3) + ((71-y) * 3), 3);
+		for (let x = 0; x < 72; ++x) {
+			for (let y = 0; y < 72; ++y) {
+				buf.writeUIntBE(buffer.readUIntBE((x * 72 * 3) + (y * 3), 3), ((71 - x) * 72 * 3) + ((71 - y) * 3), 3);
 			}
 		}
 		return buf;
 	} else if (rotation === 90) {
-		var buf = new Buffer(15552);
+		const buf = new Buffer(BUFFER_SIZE);
 
-		for (var x = 0; x < 72; ++x) {
-			for (var y = 0; y < 72; ++y) {
-				buf.writeUIntBE(buffer.readUIntBE((x * 72 * 3) + (y * 3),3), ((71-y)*72*3) + (x * 3), 3);
+		for (let x = 0; x < 72; ++x) {
+			for (let y = 0; y < 72; ++y) {
+				buf.writeUIntBE(buffer.readUIntBE((x * 72 * 3) + (y * 3), 3), ((71 - y) * 72 * 3) + (x * 3), 3);
 			}
 		}
 		return buf;
@@ -45,14 +55,14 @@ export function rotateBuffer(buffer, rotation) {
 	}
 }
 
-export function toDeviceMap (map, key) {
+export function toDeviceMap(map: number[], key: number) {
 	if (key >= 0 && key < map.length) {
 		return map[key];
 	} else {
 		return -1;
 	}
 }
-export  function fromDeviceMap (map, key) {
+export function fromDeviceMap(map: number[], key: number) {
 	return map.indexOf(key);
 }
 
@@ -77,12 +87,11 @@ export abstract class SurfaceDriverCommon {
 	public type: string;
 	public serialnumber: string;
 
-	private deviceType: string;
 	private keysTotal: number;
 	private keysPerRow: number;
 	private buttonState: Array<{ pressed: boolean }>;
 
-	constructor(system, devicepath, debug) {
+	constructor(system: EventEmitter, devicepath: string, debug: (...args: any[]) => void) {
 		this.system = system;
 		this.debug = debug;
 		this.devicepath = devicepath;
@@ -90,27 +99,26 @@ export abstract class SurfaceDriverCommon {
 		this.info = this.generateInfo(devicepath);
 
 		this.type = this.info.type;
-		this.deviceType = this.info.deviceTypeFull;
 		this.keysTotal  = this.info.keysTotal;
 		this.keysPerRow = this.info.keysPerRow;
 
 		this.config = {
 			brightness: 100,
+			page: 1,
 			rotation: 0,
-			page: 1
 		};
 
-		debug('Adding '+this.info.type+' device', devicepath);
+		debug('Adding ' + this.info.type + ' device', devicepath);
 
-		process.on('uncaughtException', function (err) {
-			system.emit('log', 'device'+this.serialnumber+')', 'debug', 'Exception:' + err);
+		process.on('uncaughtException', (err) => {
+			system.emit('log', 'device' + this.serialnumber + ')', 'debug', 'Exception:' + err);
 		});
 
 		this.openDevice();
 
 		this.info.serialnumber = this.serialnumber = this.getSerialNumber();
 
-		this.system.emit('log', 'device('+this.serialnumber+')', 'debug', 'Elgato Streamdeck detected');
+		this.system.emit('log', 'device(' + this.serialnumber + ')', 'debug', 'Elgato Streamdeck detected');
 
 		// send elgato ready message to devices :)
 		setImmediate(() => {
@@ -124,14 +132,26 @@ export abstract class SurfaceDriverCommon {
 
 	protected abstract generateInfo(devicePath: string): DriverInfo;
 
-	begin() {
-		this.log(this.type+'.begin()');
+	protected abstract setBrightness(brightness: number): void;
+
+	protected abstract openDevice(): void;
+
+	protected abstract closeDevice(): void;
+
+	protected abstract getSerialNumber(): string;
+
+	protected abstract clearKey(key: number): void;
+
+	protected abstract fillImage(key: number, buffer: Buffer): void;
+
+	public begin() {
+		this.log(this.type + '.begin()');
 
 		this.setBrightness(this.config.brightness);
 	}
 
-	buttonClear(key) {
-		this.log(this.type+'.buttonClear('+key+')');
+	public buttonClear(key: number) {
+		this.log(this.type + '.buttonClear(' + key + ')');
 		key = this.toDeviceKey(key);
 
 		if (key >= 0 && !isNaN(key)) {
@@ -139,33 +159,35 @@ export abstract class SurfaceDriverCommon {
 		}
 	}
 
-	clearDeck() {
-		this.log(this.type+'.clearDeck()');
+	public clearDeck() {
+		this.log(this.type + '.clearDeck()');
 
-		for (var x = 0; x < this.keysTotal; x++) {
+		for (let x = 0; x < this.keysTotal; x++) {
 			this.clearKey(x);
 		}
 	}
 
-	draw(key, buffer, attempts = 0) {
+	public draw(key: number, rawBuffer: Buffer | BufferContent) {
 
-		if (attempts === 0) {
-			buffer = rotateBuffer(buffer, this.config.rotation);
+		const drawKey = this.toDeviceKey(key);
+		const buffer = prepareButtonBuffer(rawBuffer, this.config.rotation);
+
+		if (buffer) {
+			this.tryDrawAttempt(drawKey, buffer, 0);
 		}
+	}
 
+	private tryDrawAttempt(drawKey: number, buffer: Buffer, attempts: number) {
 		attempts++;
 
-		var drawKey = this.toDeviceKey(key);
-
 		try {
-
 			if (drawKey !== undefined && drawKey >= 0 && drawKey < this.keysTotal) {
 				this.fillImage(drawKey, buffer);
 			}
 
 			return true;
 		} catch (e) {
-			this.log(this.deviceType+' USB Exception: ' + e.message);
+			this.log(this.info.deviceTypeFull + ' USB Exception: ' + e.message);
 
 			if (attempts > 2) {
 				this.log('Giving up USB device ' + this.devicepath);
@@ -175,70 +197,39 @@ export abstract class SurfaceDriverCommon {
 			}
 
 			// alternatively a setImmediate() or nextTick()
-			setTimeout(this.draw.bind(this), 20, key, buffer, attempts);
+			setTimeout(() => this.tryDrawAttempt(drawKey, buffer, attempts), 20);
 		}
 	}
 
-	getConfig() {
+	public getConfig() {
 		this.log('getConfig');
 
 		return this.config;
 	}
 
-	/**
-	 * ABSTRACT:
-	 */
-	setBrightness(brightness) { }
-
-	/**
-	 * ABSTRACT:
-	 */
-	openDevice() { }
-
-	/**
-	 * ABSTRACT:
-	 */
-	closeDevice() { }
-
-	/**
-	 * ABSTRACT:
-	 */
-	getSerialNumber() { return ''; }
-
-	/**
-	 * ABSTRACT:
-	 */
-	clearKey(key) { }
-
-	/**
-	 * ABSTRACT:
-	 */
-	fillImage(key, buffer) { }
-
-	initializeButtonStates() {
+	private initializeButtonStates() {
 		this.buttonState = [];
 
-		for (var button = 0; button < MAX_BUTTONS; button++) {
+		for (let button = 0; button < MAX_BUTTONS; button++) {
 			this.buttonState[button] = {
-				pressed: false
+				pressed: false,
 			};
 		}
 	}
 
-	isPressed(key) {
+	public isPressed(key) {
 		key = this.toDeviceKey(key);
-		this.log(this.type+'.isPressed('+key+')');
+		this.log(this.type + '.isPressed(' + key + ')');
 
 		if (key >= 0 && this.buttonState[key] !== undefined) {
 			return this.buttonState[key].pressed;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
 
-	keyDown(keyIndex) {
-		var key = this.toGlobalKey(keyIndex);
+	protected keyDown(keyIndex) {
+		const key = this.toGlobalKey(keyIndex);
 
 		if (key === undefined) {
 			return;
@@ -248,8 +239,8 @@ export abstract class SurfaceDriverCommon {
 		this.system.emit('elgato_click', this.devicepath, key, true, this.buttonState);
 	}
 
-	keyUp(keyIndex) {
-		var key = this.toGlobalKey(keyIndex);
+	protected keyUp(keyIndex) {
+		const key = this.toGlobalKey(keyIndex);
 
 		if (key === undefined) {
 			return;
@@ -259,11 +250,11 @@ export abstract class SurfaceDriverCommon {
 		this.system.emit('elgato_click', this.devicepath, key, false, this.buttonState);
 	}
 
-	log(...args) {
+	protected log(...args: any[]) {
 		console.log(...args);
 	}
 
-	quit() {
+	public quit() {
 		try {
 			this.clearDeck();
 
@@ -273,23 +264,23 @@ export abstract class SurfaceDriverCommon {
 		}
 	}
 
-	removeDevice(error) {
+	protected removeDevice(error) {
 		console.error(error);
 		this.system.emit('elgatodm_remove_device', this.devicepath);
 	}
 
-	setConfig(config) {
+	public setConfig(config) {
 
-		if (this.config.brightness != config.brightness && config.brightness !== undefined) {
+		if (this.config.brightness !== config.brightness && config.brightness !== undefined) {
 			this.setBrightness(config.brightness);
 		}
 
-		if (this.config.rotation != config.rotation && config.rotation !== undefined) {
+		if (this.config.rotation !== config.rotation && config.rotation !== undefined) {
 			this.config.rotation = config.rotation;
 			this.system.emit('device_redraw', this.devicepath);
 		}
 
-		if (this.config.page != config.page && config.page !== undefined) {
+		if (this.config.page !== config.page && config.page !== undefined) {
 			this.config.page = config.page;
 
 			// also handeled in usb.js
@@ -302,9 +293,9 @@ export abstract class SurfaceDriverCommon {
 	// From Global key number 0->31, to Device key f.ex 0->14
 	// 0-4 would be 0-4, but 5-7 would be -1
 	// and 8-12 would be 5-9
-	toDeviceKey(key) {
+	private toDeviceKey(key: number) {
 
-		if (this.keysTotal == MAX_BUTTONS) {
+		if (this.keysTotal === MAX_BUTTONS) {
 			return key;
 		}
 
@@ -312,8 +303,8 @@ export abstract class SurfaceDriverCommon {
 			return -1;
 		}
 
-		var row = Math.floor(key / MAX_BUTTONS_PER_ROW);
-		var col = key % MAX_BUTTONS_PER_ROW;
+		const row = Math.floor(key / MAX_BUTTONS_PER_ROW);
+		const col = key % MAX_BUTTONS_PER_ROW;
 
 		if (row >= (this.keysTotal / this.keysPerRow) || col >= this.keysPerRow) {
 			return -1;
@@ -324,9 +315,9 @@ export abstract class SurfaceDriverCommon {
 
 	// From device key number to global key number
 	// Reverse of toDeviceKey
-	toGlobalKey (key) {
-		var rows = Math.floor(key / this.keysPerRow);
-		var col = key % this.keysPerRow;
+	private toGlobalKey(key: number) {
+		const rows = Math.floor(key / this.keysPerRow);
+		const col = key % this.keysPerRow;
 
 		return (rows * MAX_BUTTONS_PER_ROW) + col;
 	}
