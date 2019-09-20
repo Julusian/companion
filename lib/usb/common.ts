@@ -55,17 +55,6 @@ export function prepareButtonBuffer(rawBuffer: Buffer | BufferContent, rotation:
 	}
 }
 
-export function toDeviceMap(map: number[], key: number) {
-	if (key >= 0 && key < map.length) {
-		return map[key];
-	} else {
-		return -1;
-	}
-}
-export function fromDeviceMap(map: number[], key: number) {
-	return map.indexOf(key);
-}
-
 export interface DriverInfo {
 	type: string;
 	devicepath: string;
@@ -128,6 +117,17 @@ export abstract class SurfaceDriverCommon {
 		this.initializeButtonStates();
 
 		this.clearDeck();
+	}
+
+	protected static toDeviceMap(map: number[], key: number) {
+		if (key >= 0 && key < map.length) {
+			return map[key];
+		} else {
+			return -1;
+		}
+	}
+	protected static fromDeviceMap(map: number[], key: number) {
+		return map.indexOf(key);
 	}
 
 	protected abstract generateInfo(devicePath: string): DriverInfo;

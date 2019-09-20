@@ -18,7 +18,7 @@
 import debug = require('debug');
 import StreamDeck = require('elgato-stream-deck-clean');
 import { EventEmitter } from 'events';
-import { fromDeviceMap, SurfaceDriverCommon, toDeviceMap } from './common';
+import { SurfaceDriverCommon } from './common';
 
 const KEY_MAP = [ 4, 3, 2, 1, 0, 9, 8, 7, 6, 5, 14, 13, 12, 11, 10 ];
 
@@ -44,8 +44,8 @@ class SurfaceDriverElgato extends SurfaceDriverCommon {
 	protected openDevice() {
 		this.device = new StreamDeck(this.devicepath);
 
-		this.device.on('down', (key) => this.keyDown(fromDeviceMap(KEY_MAP, key)));
-		this.device.on('up', (key) => this.keyUp(fromDeviceMap(KEY_MAP, key)));
+		this.device.on('down', (key) => this.keyDown(SurfaceDriverElgato.fromDeviceMap(KEY_MAP, key)));
+		this.device.on('up', (key) => this.keyUp(SurfaceDriverElgato.fromDeviceMap(KEY_MAP, key)));
 		this.device.on('error', (error) => this.removeDevice(error));
 	}
 
@@ -72,7 +72,7 @@ class SurfaceDriverElgato extends SurfaceDriverCommon {
 
 	protected clearKey(key: number) {
 		if (this.device) {
-			const deviceKey = toDeviceMap(KEY_MAP, key);
+			const deviceKey = SurfaceDriverElgato.toDeviceMap(KEY_MAP, key);
 			this.device.clearKey(deviceKey);
 		}
 	}
@@ -87,7 +87,7 @@ class SurfaceDriverElgato extends SurfaceDriverCommon {
 
 	protected fillImage(key: number, buffer: Buffer) {
 		if (this.device) {
-			const deviceKey = toDeviceMap(KEY_MAP, key);
+			const deviceKey = SurfaceDriverElgato.toDeviceMap(KEY_MAP, key);
 			this.device.fillImage(deviceKey, buffer);
 		}
 	}
