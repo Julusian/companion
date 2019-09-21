@@ -156,7 +156,7 @@ system.on('skeleton-ready', function() {
 	var db         = new (require('./lib/db'))(system,cfgDir);
 	var userconfig = require('./lib/userconfig')(system)
 	var update     = require('./lib/update')(system,cfgDir);
-	var page       = require('./lib/page')(system)
+	var page       = new (require('./lib/page'))(system, io, db);
 	var appRoot    = require('app-root-path');
 	var variable   = new (require('./lib/variable'))(system, io);
 	var feedback   = require('./lib/feedback')(system);
@@ -173,7 +173,7 @@ system.on('skeleton-ready', function() {
 	var rest       = require('./lib/rest')(system);
 	var rest_poll  = require('./lib/rest_poll')(system);
 	var loadsave   = require('./lib/loadsave')(system);
-	var preset     = require('./lib/preset')(system);
+	var preset     = new (require('./lib/preset'))(system, io);
 	var tablet     = require('./lib/tablet')(system);
 	var satellite  = require('./lib/satellite_server')(system);
 	var ws_api     = require('./lib/ws_api')(system);
