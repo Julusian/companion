@@ -153,7 +153,7 @@ system.on('skeleton-ready', function() {
 	var server_http= require('./lib/server_http')(system);
 	var io         = require('./lib/io')(system, server_http);
 	var log        = new (require('./lib/log'))(system,io);
-	var db         = require('./lib/db')(system,cfgDir);
+	var db         = new (require('./lib/db'))(system,cfgDir);
 	var userconfig = require('./lib/userconfig')(system)
 	var update     = require('./lib/update')(system,cfgDir);
 	var page       = require('./lib/page')(system)
