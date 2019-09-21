@@ -158,7 +158,7 @@ system.on('skeleton-ready', function() {
 	var update     = require('./lib/update')(system,cfgDir);
 	var page       = require('./lib/page')(system)
 	var appRoot    = require('app-root-path');
-	var variable   = require('./lib/variable')(system);
+	var variable   = new (require('./lib/variable'))(system, io);
 	var feedback   = require('./lib/feedback')(system);
 	var action     = require('./lib/action')(system);
 	var bank       = require('./lib/bank')(system);
