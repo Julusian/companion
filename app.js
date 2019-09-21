@@ -163,7 +163,7 @@ system.on('skeleton-ready', function() {
 	var action     = require('./lib/action')(system);
 	var bank       = require('./lib/bank')(system);
 	var elgatoDM   = require('./lib/elgato_dm')(system);
-	var preview    = require('./lib/preview')(system);
+	var preview    = new (require('./lib/preview'))(system, page);
 	var instance   = require('./lib/instance')(system);
 	var osc        = require('./lib/osc')(system);
 	var server_api = require('./lib/server_api')(system);
