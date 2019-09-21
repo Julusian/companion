@@ -157,14 +157,14 @@ system.on('skeleton-ready', function() {
 	var userconfig = require('./lib/userconfig')(system)
 	var update     = require('./lib/update')(system,cfgDir);
 	var page       = new (require('./lib/page'))(system, io, db);
-	var appRoot    = require('app-root-path');
+	// var appRoot    = require('app-root-path');
 	var variable   = new (require('./lib/variable'))(system, io);
 	var feedback   = require('./lib/feedback')(system);
 	var action     = require('./lib/action')(system);
 	var bank       = require('./lib/bank')(system);
 	var elgatoDM   = require('./lib/elgato_dm')(system);
 	var preview    = new (require('./lib/preview'))(system, page);
-	var instance   = require('./lib/instance')(system);
+	var instance   = new (require('./lib/instance'))(system, io, db);
 	var osc        = require('./lib/osc')(system);
 	var server_api = require('./lib/server_api')(system);
 	var server_tcp = require('./lib/server_tcp')(system);
