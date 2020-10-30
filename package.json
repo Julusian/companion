@@ -152,5 +152,8 @@
 	},
 	"optionalDependencies": {
 		"@julusian/jpeg-turbo": "^0.5.6"
+	},
+	"resolutions": {
+		"infinitton-idisplay/node-hid": "^1.0.0"
 	}
 }
