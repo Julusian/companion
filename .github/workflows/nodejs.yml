@@ -34,7 +34,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: yarn update and macdist
       run: |
         yarn update
         yarn run macdist
@@ -56,7 +56,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: yarn update and windist
       run: |
         yarn update
         yarn run windist
