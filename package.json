@@ -3,8 +3,8 @@
 	"version": "2.1.1",
 	"description": "Companion",
 	"main": "bitfocus-skeleton/main.js",
+	"afterPack": "./tools/asar-repack.js",
 	"build": {
-		"afterPack": "./tools/asar-repack.js",
 		"productName": "Companion",
 		"appId": "companion.bitfocus.no",
 		"mac": {
@@ -95,7 +95,7 @@
 		"chai": "^4.2.0",
 		"chai-fs": "^2.0.0",
 		"electron": "^8.0.0",
-		"electron-builder": "^22.9.1",
+		"electron-builder": "20.10.0",
 		"mocha": "^6.2.3",
 		"nodemon": "^2.0.6",
 		"p-all": "^3.0.0",
