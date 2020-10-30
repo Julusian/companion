@@ -15,7 +15,9 @@ async function runForDir(root, modName) {
 }
 
 module.exports = async function(context) {
-    const resourcesPath = path.join(context.appOutDir, 'resources')
+    const APP_NAME = context.packager.appInfo.productFilename;
+    const PLATFORM = context.packager.platform.name;
+    const resourcesPath = PLATFORM === 'mac' ? path.join(context.appOutDir, APP_NAME + '.app', 'Contents/Resources') : path.join(context.appOutDir, 'resources')
 
     const appAsar = path.join(resourcesPath, 'app.asar')
     const tmpApp = path.join(resourcesPath, 'app.tmp')
