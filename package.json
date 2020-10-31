@@ -36,7 +36,14 @@
 			]
 		},
 		"win": {
-			"target": "nsis"
+			"target": "nsis",
+			"extraFiles": [
+				{
+					"from": "./node_modules/sharp/vendor/lib",
+					"to": ".",
+					"filter": [ "lib*.dll" ]
+				}
+			]
 		},
 		"nsis": {
 			"artifactName": "companion-win64.exe",
