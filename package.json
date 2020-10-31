@@ -27,6 +27,12 @@
 				"node_modules/moment",
 				"node_modules/select2",
 				"node_modules/tributejs/dist"
+			],
+			"extraFiles": [
+				{
+					"from": "./node_modules/sharp/vendor/lib",
+					"to": "Frameworks"
+				}
 			]
 		},
 		"win": {
