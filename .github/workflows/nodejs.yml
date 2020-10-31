@@ -16,6 +16,12 @@ jobs:
       run: |
         yarn update
         yarn run lindist
+
+        # manually tar it, to preserve the symlinks
+        cd electron-output
+        VERSION=$(node -e "console.log(require('./package.json').version)")
+        mv linux-unpacked companion-$VERSION
+        tar -cvzf companion-$VERSION.tar.gz companion-$VERSION
     - name: rename and upload stuff
       run: node ./tools/build_rename_git.js
       env:

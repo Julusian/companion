@@ -54,6 +54,7 @@
 			"output": "electron-output/"
 		},
 		"linux": {
+			"target": "dir",
 			"extraFiles": [
 				{
 					"from": "./node_modules/sharp/vendor/lib",
@@ -72,7 +73,8 @@
 			"assets/trayTemplate@2x.png",
 			"!font/*",
 			"!tools/*",
-			"!*.md"
+			"!*.md",
+			"!node_modules/sharp/vendor/lib"
 		]
 	},
 	"scripts": {
@@ -84,8 +86,8 @@
 		"testprod": "./node_modules/electron/cli.js .",
 		"macdist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --publish=never --mac",
 		"windist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --publish=never --win",
-		"lindist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --publish=never --linux tar.gz",
-		"rpidist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --armv7l --linux tar.gz",
+		"lindist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --publish=never --linux",
+		"rpidist": "./tools/build_writefile.sh ; rm -rf electron-output && electron-builder --armv7l --linux",
 		"start": "yarn run",
 		"test": "mocha",
 		"postinstall": "./tools/build_writefile.sh",
