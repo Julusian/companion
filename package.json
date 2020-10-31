@@ -39,9 +39,9 @@
 			"target": "nsis",
 			"extraFiles": [
 				{
-					"from": "./node_modules/sharp/vendor/lib",
+					"from": "./node_modules/sharp/build/Release",
 					"to": ".",
-					"filter": [ "lib*.dll" ]
+					"filter": ["lib*.dll"]
 				}
 			]
 		},
