@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Module Requests
+  - name: NEW DEVICE OR SOFTWARE SUPPORT
     url: https://github.com/bitfocus/companion-module-requests/issues
     about: Please request new device integrations here.
     
