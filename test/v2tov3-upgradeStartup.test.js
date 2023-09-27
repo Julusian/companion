@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import DataStoreBase from '../lib/Data/StoreBase.js'
 import DataDatabase from '../lib/Data/Database.js'
 import LogController from '../lib/Log/Controller.js'
@@ -18,9 +20,10 @@ describe('upgrade', () => {
 	it('empty', () => {
 		const db = CreateDataDatabase(DataDatabase.Defaults)
 		const result = v2tov3.upgradeStartup(db, LogController.createLogger('foo'))
+
 		console.log(result)
 		console.log(db.store)
-		expect(db.store).toEqual({
+		assert.deepEqual(db.store, {
 			page_config_version: 3,
 		})
 	})
