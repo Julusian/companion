@@ -1,7 +1,5 @@
-import { describe, it } from 'node:test'
-import assert from 'node:assert'
-import { ParseExpression as parse } from '../lib/Shared/Expression/ExpressionParse.js'
-import { ResolveExpression as resolve } from '../lib/Shared/Expression/ExpressionResolve.js'
+import { ParseExpression as parse } from '../lib/Shared/Expression/ExpressionParse'
+import { ResolveExpression as resolve } from '../lib/Shared/Expression/ExpressionResolve'
 import jsep from 'jsep'
 
 describe('resolver', function () {
@@ -10,7 +8,7 @@ describe('resolver', function () {
 			if (op) {
 				it(`should handle "${op}" operator`, function () {
 					const result = resolve(parse(`1 ${op} 2`))
-					assert.match(typeof result, /^number|boolean$/)
+					expect(typeof result).toMatch(/^number|boolean$/)
 				})
 			}
 		}
@@ -21,7 +19,7 @@ describe('resolver', function () {
 			if (op) {
 				it(`should handle "${op}" operator`, function () {
 					const result = resolve(parse(`${op}2`))
-					assert.match(typeof result, /^number|boolean$/)
+					expect(typeof result).toMatch(/^number|boolean$/)
 				})
 			}
 		}
@@ -30,62 +28,62 @@ describe('resolver', function () {
 	describe('expressions with literal operand', function () {
 		it('should handle addition', function () {
 			const result = resolve(parse('1 + 2'))
-			assert.strictEqual(result, 3)
+			expect(result).toBe(3)
 		})
 
 		it('should handle addition', function () {
 			const result = resolve(parse('3 - 4'))
-			assert.strictEqual(result, -1)
+			expect(result).toBe(-1)
 		})
 
 		it('should handle multiplication', function () {
 			const result = resolve(parse('5 * 6'))
-			assert.strictEqual(result, 30)
+			expect(result).toBe(30)
 		})
 
 		it('should handle division', function () {
 			const result = resolve(parse('7 / 8'))
-			assert.strictEqual(result, 0.875)
+			expect(result).toBe(0.875)
 		})
 
 		// it('should handle exponentiation', function () {
 		// 	const result = resolve(parse('2 ^ 8'))
-		// 	assert.strictEqual(result,256)
+		// 	expect(result).toBe(256)
 		// })
 
 		it('should handle unary negation', function () {
 			const result = resolve(parse('-1 + -2'))
-			assert.strictEqual(result, -3)
+			expect(result).toBe(-3)
 		})
 
 		it('should handle consecutive unary negation', function () {
 			const result = resolve(parse('--1 + 1'))
-			assert.strictEqual(result, 2)
+			expect(result).toBe(2)
 		})
 
 		it('should handle consecutive unary negation with parenthesis', function () {
 			const result = resolve(parse('-(-1) + 1'))
-			assert.strictEqual(result, 2)
+			expect(result).toBe(2)
 		})
 
 		it('should handle negation of expression within parenthesis', function () {
 			const result = resolve(parse('-(-1 + -1)'))
-			assert.strictEqual(result, 2)
+			expect(result).toBe(2)
 		})
 
 		it('should handle multiple operators', function () {
 			const result = resolve(parse('((2 + 2) * 3 / 4) ^ 3 % 2'))
-			assert.strictEqual(result, 2)
+			expect(result).toBe(2)
 		})
 
 		it('should handle floating point literals', function () {
 			const result = resolve(parse('1.234 * 2'))
-			assert.strictEqual(result, 2.468)
+			expect(result).toBe(2.468)
 		})
 
 		it('should handle division by zero', function () {
 			const result = resolve(parse('1 / 0'))
-			assert.strictEqual(result, Infinity)
+			expect(result).toBe(Infinity)
 		})
 	})
 
@@ -98,7 +96,7 @@ describe('resolver', function () {
 						return 2
 				}
 			}
-			assert.strictEqual(resolve(postfix, getVariable), 3)
+			expect(resolve(postfix, getVariable)).toBe(3)
 		})
 
 		it('should handle multiple symbol operands', function () {
@@ -111,7 +109,7 @@ describe('resolver', function () {
 						return '1'
 				}
 			}
-			assert.strictEqual(resolve(postfix, getVariable), 4)
+			expect(resolve(postfix, getVariable)).toBe(4)
 		})
 
 		it('handle string variables', function () {
@@ -126,7 +124,7 @@ describe('resolver', function () {
 						return 1
 				}
 			}
-			assert.strictEqual(resolve(postfix, getVariable), 4)
+			expect(resolve(postfix, getVariable)).toBe(4)
 		})
 
 		it('should handle duplicate symbol operands', function () {
@@ -137,7 +135,7 @@ describe('resolver', function () {
 						return 10
 				}
 			}
-			assert.strictEqual(resolve(postfix, getVariable), 1)
+			expect(resolve(postfix, getVariable)).toBe(1)
 		})
 	})
 
@@ -145,29 +143,29 @@ describe('resolver', function () {
 		it('should detect missing symbol values', function () {
 			const getVariable = () => undefined
 			const fn = () => resolve(parse('$(internal:a) + 1'), getVariable)
-			assert.throws(fn, /Missing variable value/)
+			expect(fn).toThrow(/Missing variable value/)
 		})
 
 		it('should detect missing operands', function () {
 			const fn = () => resolve(parse('1 +'))
-			assert.throws(fn, /Expected expression after/)
+			expect(fn).toThrow(/Expected expression after/)
 		})
 
 		it('should detect extraneous operands', function () {
 			const fn = () => resolve(parse('10 + 10 20 30'))
-			assert.throws(fn, /Unknown node "Compound"/)
+			expect(fn).toThrow(/Unknown node "Compound"/)
 		})
 	})
 
 	describe('functions', function () {
 		it('should parse and execute provided functions', function () {
 			const result = resolve(parse('round(10.1)'), {}, { round: (v) => Math.round(v) })
-			assert.strictEqual(result, 10)
+			expect(result).toBe(10)
 		})
 
 		it('should fail on an unknown function', function () {
 			const fn = () => resolve(parse('round2(10.1)'), {}, { round: (v) => Math.round(v) })
-			assert.throws(fn, /Unsupported function "round2"/)
+			expect(fn).toThrow(/Unsupported function "round2"/)
 		})
 
 		it('should handle multiple function arguments', function () {
@@ -176,31 +174,31 @@ describe('resolver', function () {
 				{},
 				{ round: (v, accuracy = 1) => Math.round(v / accuracy) * accuracy }
 			)
-			assert.strictEqual(result, 20.1)
+			expect(result).toBe(20.1)
 		})
 	})
 
 	describe('ternaries', function () {
 		it('should parse and execute ternary', function () {
 			const result = resolve(parse('(1 > 2) ? 3 : 4'))
-			assert.strictEqual(result, 4)
+			expect(result).toBe(4)
 		})
 	})
 
 	describe('templates', function () {
 		it('handle template', () => {
 			const result = resolve(parse('`val: ${1 + 2}dB`'))
-			assert.strictEqual(result, 'val: 3dB')
+			expect(result).toBe('val: 3dB')
 		})
 
 		it('handle template at start', () => {
 			const result = resolve(parse('`${1 + 2}dB`'))
-			assert.strictEqual(result, '3dB')
+			expect(result).toBe('3dB')
 		})
 
 		it('handle template at end', () => {
 			const result = resolve(parse('`val: ${1 + 2}`'))
-			assert.strictEqual(result, 'val: 3')
+			expect(result).toBe('val: 3')
 		})
 
 		it('handle complex templates', () => {
@@ -213,7 +211,7 @@ describe('resolver', function () {
 				}
 			}
 			const result = resolve(parse('`val: ${1 + 2}dB or ${$(some:var)} and ${$(another:var)}`'), getVariable)
-			assert.strictEqual(result, 'val: 3dB or var1 and 99')
+			expect(result).toBe('val: 3dB or var1 and 99')
 		})
 	})
 })

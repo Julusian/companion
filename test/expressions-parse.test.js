@@ -1,6 +1,4 @@
-import { describe, it } from 'node:test'
-import assert from 'node:assert'
-import { ParseExpression, FindAllReferencedVariables } from '../lib/Shared/Expression/ExpressionParse.js'
+import { ParseExpression, FindAllReferencedVariables } from '../lib/Shared/Expression/ExpressionParse'
 
 function ParseExpression2(str) {
 	const node = ParseExpression(str)
@@ -14,7 +12,7 @@ describe('parser', () => {
 	describe('operator precedence', () => {
 		it('should handle expressions with single operators', () => {
 			const result = ParseExpression2('$(internal:a) + $(internal:b)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -33,7 +31,7 @@ describe('parser', () => {
 
 		it('should handle multiple operators with same precedence', () => {
 			const result = ParseExpression2('$(internal:a) + $(internal:b) - $(internal:c)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '-',
@@ -60,7 +58,7 @@ describe('parser', () => {
 
 		it('should handle multiple operators with different precedence', () => {
 			const result = ParseExpression2('$(internal:a) + $(internal:b) * $(internal:c)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -87,7 +85,7 @@ describe('parser', () => {
 
 		it('should handle parenthesis', () => {
 			const result = ParseExpression2('($(internal:a) + $(internal:b)) * $(internal:c)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '*',
@@ -116,7 +114,7 @@ describe('parser', () => {
 			const result = ParseExpression2(
 				'(($(internal:a) + $(internal:b)) / ($(internal:c) + $(internal:d))) ^ ($(internal:e) % 2)'
 			)
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '^',
@@ -170,7 +168,7 @@ describe('parser', () => {
 	describe('unary negative', () => {
 		it('should handle at the beginning of the expression', () => {
 			const result = ParseExpression2('-$(internal:a) + $(internal:b)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -194,7 +192,7 @@ describe('parser', () => {
 
 		it('should handle in the middle of an expression', () => {
 			const result = ParseExpression2('-$(internal:a) + -$(internal:b)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -223,7 +221,7 @@ describe('parser', () => {
 
 		it('should handle before open parenthesis', () => {
 			const result = ParseExpression2('$(internal:a) + (-$(internal:b) + $(internal:c))')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -255,7 +253,7 @@ describe('parser', () => {
 
 		it('boolean expression', () => {
 			const result = ParseExpression2('true || !$(internal:b)')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '||',
@@ -280,7 +278,7 @@ describe('parser', () => {
 
 		it('boolean expression2', () => {
 			const result = ParseExpression2('1 == true')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '==',
@@ -303,24 +301,24 @@ describe('parser', () => {
 	describe('syntax errors', () => {
 		it('should detect invalid tokens', () => {
 			const fn = () => ParseExpression2('$(internal:a) @ $(internal:b)')
-			assert.throws(fn, /Unexpected \"@\" at/)
+			expect(fn).toThrow(/Unexpected \"@\" at/)
 		})
 
 		// it.only('should detect empty parenthesis', () => {
 		// 	const fn = () => parse('()')
-		// 	assert.deepEqual(fn).to.throw(/Empty parenthesis/)
+		// 	expect(fn).to.throw(/Empty parenthesis/)
 		// })
 
 		it('should detect missing parenthesis', () => {
 			const fn = () => ParseExpression2('$(internal:a) * ( $(internal:b) +')
-			assert.throws(fn, /Expected expression after +/)
+			expect(fn).toThrow(/Expected expression after +/)
 		})
 	})
 
 	describe('functions', () => {
 		it('should detect function', () => {
 			const result = ParseExpression2('round($(internal:a))')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'CallExpression',
 					callee: {
@@ -342,7 +340,7 @@ describe('parser', () => {
 	describe('ternaries', () => {
 		it('handle ternary', () => {
 			const result = ParseExpression2('(1 > 2) ? 3 : 4')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'ConditionalExpression',
 					test: {
@@ -378,7 +376,7 @@ describe('parser', () => {
 	describe('template', () => {
 		it('handle template', () => {
 			const result = ParseExpression2('`val: ${1 + 2}dB`')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'TemplateLiteral',
 					expressions: [
@@ -422,7 +420,7 @@ describe('parser', () => {
 
 		it('handle complex templates', () => {
 			const result = ParseExpression2('`val: ${1 + 2}dB or ${$(some:var)} and ${$(another:var)}` + 1')
-			assert.deepEqual(result, {
+			expect(result).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '+',
@@ -500,12 +498,12 @@ describe('parser', () => {
 
 	describe('variable parsing', () => {
 		it('unclosed identifier', () => {
-			assert.throws(() => ParseExpression2('21 == $('), 'Expected )')
+			expect(() => ParseExpression2('21 == $(')).toThrow('Expected )')
 		})
 		it('no name', () => {
 			const res = ParseExpression2('21 == $()')
 
-			assert.deepEqual(res, {
+			expect(res).toEqual({
 				expr: {
 					type: 'BinaryExpression',
 					operator: '==',
