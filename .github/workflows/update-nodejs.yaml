@@ -9,6 +9,10 @@ on:
 env:
   COMPANION_BRANCH: master
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-nodejs:
     # if: ${{ github.repository_owner == 'bitfocus' }}
@@ -29,9 +33,13 @@ jobs:
         with:
           node-version-file: '.node-version'
 
+      - name: Setup environment
+        run: |
+          corepack enable
+          yarn
+
       - name: Run script
         run: |
-          yarn
           node tools/update_nodejs_versions.mjs
 
       - name: Create Pull Request
